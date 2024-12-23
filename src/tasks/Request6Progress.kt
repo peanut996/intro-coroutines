@@ -13,13 +13,13 @@ suspend fun loadContributorsProgress(
         .also { logRepos(req, it) }
         .body() ?: emptyList()
 
-    val repoContributors = Collections.synchronizedList(mutableListOf<User>())
+    var repoContributors = Collections.synchronizedList(mutableListOf<User>())
     repos.forEach { repo ->
         val contributors = service
             .getRepoContributors(req.org, repo.name)
             .also { logUsers(repo, it) }
             .bodyList()
-        repoContributors += contributors
+        repoContributors = (contributors + repoContributors).aggregate()
         updateResults(repoContributors, repos.size == repoContributors.size)
     }
 }
